@@ -39,11 +39,9 @@ describe "User pages" do
           visit users_path
         end
 
-       it { should have_link('delete', href: user_path(User.first)) }
+        it { should have_link('delete', href: user_path(User.first)) }
         it "should be able to delete another user" do
-          expect do
-            click_link('delete', match: :first)
-          end.to change(User, :count).by(-1)
+          expect { click_link('delete') }.to change(User, :count).by(-1)
         end
         it { should_not have_link('delete', href: user_path(admin)) }
       end
@@ -51,13 +49,22 @@ describe "User pages" do
   end
   
   describe "profile page" do
-    let(:user) { FactoryGirl.create(:user) }    
+    let(:user) { FactoryGirl.create(:user) }
+    let!(:m1) { FactoryGirl.create(:micropost, user: user, content: "Foo") }
+    let!(:m2) { FactoryGirl.create(:micropost, user: user, content: "Bar") }
+
     before { visit user_path(user) }
 
     it { should have_content(user.name) }
     it { should have_title(user.name) }
-  end
 
+    describe "microposts" do
+      it { should have_content(m1.content) }
+      it { should have_content(m2.content) }
+      it { should have_content(user.microposts.count) }
+    end
+  end
+  
   describe "signup page" do
     before { visit signup_path }
 
